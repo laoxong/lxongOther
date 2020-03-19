@@ -7,7 +7,7 @@
 logfile=/usr/local/caddy/log/
 #结束时间现在
 
-end_time=`date +%s`
+end_time=date +%s
 #echo $end_time
 
 #开始时间1分钟之前
@@ -19,7 +19,7 @@ start_time=$(( end_time - 60 ))
 
 tac $logfile/web.log | awk -v st="$start_time" -v et="$end_time" '{if(($8 > st || $8 == st) && ($8 < et || $8 == et)) {print $3}}' | sort | uniq -c | sort -nr > $logfile/log_ip_top
 
-ip_top=`cat $logfile/log_ip_top | head -1 | awk '{print $1}'`
+ip_top=cat $logfile/log_ip_top | head -1 | awk '{print $1}'
 
 #单位时间[1分钟]内相同ip访问次数超过 n 次自动加入到 Cloudflare 防火墙. （这里 5 次是做测试用的。）
 
@@ -37,11 +37,7 @@ GlobalAPIKey=""
 ZoneID=""
 
 for IPAddr in $ip; do
-if[$IPAddr -eq "127.0.0.1"]; then
-
-else
-for IPAddr in $ip; do
-  if [ $IPAddr == "白名单IP" ]; then
+  if [ $IPAddr == "127.0.0.1" ]; then
     echo "none";
   else
     curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZoneID/firewall/access_rules/rules" \
@@ -51,4 +47,3 @@ for IPAddr in $ip; do
       --data '{"mode":"block","configuration":{"target":"ip","value":"'$IPAddr'"},"notes":"CC/DDOS Attatch"}'  
   fi
 done
-

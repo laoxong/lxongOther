@@ -40,12 +40,15 @@ for IPAddr in $ip; do
 if[$IPAddr -eq "127.0.0.1"]; then
 
 else
-
-curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZoneID/firewall/access_rules/rules" \
-  -H "X-Auth-Email: $CFEmail" \
-  -H "X-Auth-Key: $GlobalAPIKey" \
-  -H "Content-Type: application/json" \
-  --data '{"mode":"block","configuration":{"target":"ip","value":"'$IPAddr'"},"notes":"CC/DDOS Attatch"}'
-
-fi
+for IPAddr in $ip; do
+  if [ $IPAddr == "白名单IP" ]; then
+    echo "none";
+  else
+    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZoneID/firewall/access_rules/rules" \
+      -H "X-Auth-Email: $CFEmail" \
+      -H "X-Auth-Key: $GlobalAPIKey" \
+      -H "Content-Type: application/json" \
+      --data '{"mode":"block","configuration":{"target":"ip","value":"'$IPAddr'"},"notes":"CC/DDOS Attatch"}'  
+  fi
 done
+

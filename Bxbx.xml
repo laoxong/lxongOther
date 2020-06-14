@@ -14,6 +14,7 @@
 <item enabled="true">t=◎作者【Jn_xyp】</item>
 <item enabled="true">t=混入其中</item>
 <item enabled="true">t=不会吧不会吧</item>
+<item enabled="true">t=晦气</item>
 <!-- ◎=====以上为文本规则===== -->
 <!-- ◎=====以下为正则规则===== -->
 <item enabled="true">r=^[0-9\/\\\.\,\!\?\，\。\、\！\？\:\+\~\s我是的真好前钱排分钟刚第半两一二三四五六七八九个十百千万小时年月日天名条哇哈啊哦额咦耶沙发]+$</item>
@@ -211,6 +212,10 @@
 <item enabled="true">r=【光年钓鱼】|光年是.*(单位)</item>
 <item enabled="true">r=【嘤嘤怪】|^嘤+$</item>
 <item enabled="true">r=【表白】|[\u4e00-\u9fa5]{2,4}(喜欢|爱)你</item>
+<item enabled="true">r=【弹幕】|(-?[1-9]\d*)弹幕</item>
+<item enabled="true">r=【播放】|(-?[1-9]\d*)播放</item>
+<item enabled="true">r=【重复】|.{3,}</item>
+
 <!-- ◎===== 以上为正则规则===== --> 
 <!--        以下为用户屏蔽      -->
 <item enabled="true">u=512019e3</item>

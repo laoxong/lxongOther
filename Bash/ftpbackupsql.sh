@@ -1,6 +1,7 @@
 #!/bin/sh
 BAK_DIR="/data/backup/" #本机备份文件临时存储目录
 WEB_DIR="/data/web/*" #要备份的网站文件
+FTP_IP="xxx.xxx.xxx.xxx" #ftp地址
 FTP_USER="username" #FTP用户名
 FTP_PWD="password" #FTP密码
 DB="XXX" #要备份的数据库
@@ -38,8 +39,7 @@ echo "Database Export Fail!" >> $MYLOG_DIR/databak.log
 fi
 if [[ $re1 == 0 ]] && [[ $re2 == 0 ]]; then
 echo "Began to upload file $DATE_TIME" >> $MYLOG_DIR/databak.log
-ftp -n<<!
-open 42.51.152.254
+ftp -v -n $FTP_IP<<!
 user $FTP_USER $FTP_PWD
 binary
 hash

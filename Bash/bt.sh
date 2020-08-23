@@ -2,6 +2,7 @@
 
 echo "本脚本由老兄制作,仅供研究使用"
 echo "我的博客:https://www.moec.top"
+echo "请在运行前提前安装curl"
 echo "------------------------"
 echo "1.开始运行"
 echo "2.添加hosts文件保护"

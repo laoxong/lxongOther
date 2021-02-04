@@ -15,6 +15,9 @@
 <item enabled="true">t=混入其中</item>
 <item enabled="true">t=不会吧不会吧</item>
 <item enabled="true">t=晦气</item>
+<item enabled="true">t=没有弹幕吗</item>
+<item enabled="true">t=爷青回</item>
+
 <!-- ◎=====以上为文本规则===== -->
 <!-- ◎=====以下为正则规则===== -->
 <item enabled="true">r=^[0-9\/\\\.\,\!\?\，\。\、\！\？\:\+\~\s我是的真好前钱排分钟刚第半两一二三四五六七八九个十百千万小时年月日天名条哇哈啊哦额咦耶沙发]+$</item>
@@ -215,7 +218,8 @@
 <item enabled="true">r=【弹幕】|(-?[1-9]\d*)弹幕</item>
 <item enabled="true">r=【播放】|(-?[1-9]\d*)播放</item>
 <item enabled="true">r=【重复】|(\w)[^\1]{2,}\1</item>
-
+<item enabled="true">r=【老公|婆】|老(公|婆)好</item>
+<item enabled="true">r=【xx分界线】|^*分界线</item>
 <!-- ◎===== 以上为正则规则===== -->
 <!--        以下为用户屏蔽      -->
 <item enabled="true">u=512019e3</item>

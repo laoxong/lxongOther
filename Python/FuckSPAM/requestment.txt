@@ -1,0 +1,5 @@
+imagehash
+aiohttp
+python-dotenv
+websockets
+dotenv

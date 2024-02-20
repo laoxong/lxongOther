@@ -1,76 +1,71 @@
 import asyncio
-import os
-
-import aiohttp
-import websockets
 import json
+import os
+from io import BytesIO
+
+import httpx
 import imagehash
-from dotenv import load_dotenv
+import websockets
 from PIL import Image
-
-spamImgDict = ['938db8e0adb3c616', 'ac3491c9d1cc52fb']
-InstanceHost = os.getenv('InstanceHost')
-misskeyI = os.getenv('misskeyI')
-
-async def fetchImg(session, url):
-    async with session.get(url) as response:
-        return await response.read(), response.status
+from dotenv import load_dotenv
 
 
-async def suspendUser(session, id):
-    async with session.post(f"https://{InstanceHost}/api/admin/suspend-user",
-                            params={"i": misskeyI, "userId": id}) as response:
-        return response.status
+class FuckSPAM:
+    def __init__(self):
+        self.spamImgDict = ['938db8e0adb3c616', 'ac3491c9d1cc52fb']
+        self.InstanceHost = os.getenv("InstanceHost")
+        self.misskeyI = os.getenv('misskeyI')
+        self.s = httpx.AsyncClient(base_url=f'https://{os.getenv("InstanceHost")}')
 
+    async def __fetch_img(self, url):
+        r = await self.s.get(url)  # 理论上其他域名已经覆盖了 base_url
+        return r.read(), r.status_code
 
-async def delNote(session, id):
-    async with session.post(f"https://{InstanceHost}/api/notes/delete", data=json.dumps({"i": misskeyI, "noteId": id}),
-                            headers={"Content-Type": "application/json"}) as response:
-        return response.status
+    async def __suspend_user(self, __id) -> None:
+        await self.s.post(f"/api/admin/suspend-user", json={"i": self.misskeyI, "userId": __id})
 
+    async def __del_note(self, __id) -> None:
+        await self.s.post(f"/api/notes/delete", json={"i": self.misskeyI, "noteId": __id})
 
-async def report(session, id):
-    async with session.post(f"https://{InstanceHost}/api/users/report-abuse",
-                            data=json.dumps({"i": misskeyI, "userId": id, "comment": "疑似滥用"}),
-                            headers={"Content-Type": "application/json"}) as response:
-        return response.status
+    async def __report(self, __id) -> None:
+        await self.s.post(f"/api/users/report-abuse", json={"i": self.misskeyI, "userId": __id, "comment": "疑似滥用"})
 
+    async def __handle_message(self, message: str) -> None:
+        print(message)
+        mes = json.loads(message)
+        try:
+            if "mentions" in mes["body"]["body"] and "files" in mes["body"]["body"]:
+                if len(mes["body"]["body"]) > 2:
+                    file_content, _ = await self.__fetch_img(mes["body"]["body"]["files"][0]["url"])
+                    memory_file = BytesIO(file_content)
+                    phash = imagehash.phash(Image.open(memory_file))
 
-async def handle_message(message):
-    print(message)
-    mes = json.loads(message)
-    try:
-        if "mentions" in mes["body"]["body"] and "files" in mes["body"]["body"]:
-            if len(mes["body"]["body"]) > 2:
-                async with aiohttp.ClientSession() as session:
-                    file_content, status = await fetchImg(session, mes["body"]["body"]["files"][0]["url"])
+                    if str(phash) in self.spamImgDict:
+                        await self.__del_note(mes["body"]["body"]["id"])
+                        await self.__suspend_user(mes["body"]["body"]["user"]["id"])
+                        await self.__report(mes["body"]["body"]["user"]["id"])
+        except KeyError:
+            ...
 
-                with open("downloaded_file.png", "wb") as f:
-                    f.write(file_content)
-                phash = imagehash.phash(Image.open("downloaded_file.png"))
+    async def wss_client_start(self):
+        url = f"wss://{self.InstanceHost}/streaming?i={self.misskeyI}"
+        async with websockets.connect(url) as ws:
+            print(f"Connected to {url}")
+            data = {"type": "connect", "body": {"channel": "main", "id": "1"}}
+            await ws.send(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
+            data = {"type": "connect", "body": {"channel": "globalTimeline", "id": "2",
+                                                "params": {"withRenotes": True, "withReplies": True}}}
+            await ws.send(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
 
-                if str(phash) in spamImgDict:
-                    async with aiohttp.ClientSession() as session:
-                        await delNote(session, mes["body"]["body"]["id"])
-                        await suspendUser(session, mes["body"]["body"]["user"]["id"])
-                        await report(session, mes["body"]["body"]["user"]["id"])
-    except KeyError:
-        ...
+            async for message in ws:
+                await self.__handle_message(message)
 
 
 async def main():
-    url = f"wss://{InstanceHost}/streaming?i={misskeyI}"
-    async with websockets.connect(url) as websocket:
-        print(f"Connected to {url}")
-        await websocket.send('{ "type": "connect", "body": { "channel": "main", "id": "1" } }')
-        await websocket.send(
-            '{"type":"connect","body":{"channel":"globalTimeline","id":"2","params":{"withRenotes":true,'
-            '"withReplies":true}}}')
-        while True:
-            message = await websocket.recv()
-            await handle_message(message)
+    load_dotenv()
+    fuck_spam = FuckSPAM()
+    await fuck_spam.wss_client_start()
 
 
 if __name__ == "__main__":
-    load_dotenv()
     asyncio.run(main())

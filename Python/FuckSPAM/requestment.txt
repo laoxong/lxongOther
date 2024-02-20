@@ -1,5 +1,5 @@
 imagehash
-aiohttp
+httpx
 python-dotenv
 websockets
 dotenv

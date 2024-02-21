@@ -37,7 +37,7 @@ class FuckSPAM:
         mes = json.loads(message)
         try:
             if "mentions" in mes["body"]["body"] and "files" in mes["body"]["body"]:
-                if len(mes["body"]["body"]) > 2:
+                if len(mes["body"]["body"]["mentions"]) > 2 and len(mes["body"]["body"]["files"]) > 0:
                     file_content, _ = await self.__fetch_img(mes["body"]["body"]["files"][0]["url"])
                     memory_file = BytesIO(file_content)
                     phash = imagehash.phash(Image.open(memory_file))
@@ -49,7 +49,7 @@ class FuckSPAM:
             
             #判断网址
             url_pattern = re.compile(r'https?://\S+')
-            urls = url_pattern.findall(mes["body"]["body"]["text"])
+            urls = url_pattern.findall(str(mes["body"]["body"]["text"]))
             for url in urls:
                 if url in self.spamWord:
                     await self.__del_note(mes["body"]["body"]["id"])
@@ -73,7 +73,7 @@ class FuckSPAM:
                 async for message in ws:
                     await self.__handle_message(message)
         except websockets.exceptions.ConnectionClosedError:
-            
+            await fuck_spam.wss_client_start()
 
 
 async def main():

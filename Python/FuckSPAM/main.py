@@ -73,7 +73,7 @@ class FuckSPAM:
                 async for message in ws:
                     await self.__handle_message(message)
         except websockets.exceptions.ConnectionClosedError:
-            await fuck_spam.wss_client_start()
+            await self.wss_client_start()
 
 
 async def main():

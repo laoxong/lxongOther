@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from io import BytesIO
+import re
 
 import httpx
 import imagehash
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 class FuckSPAM:
     def __init__(self):
         self.spamImgDict = ['938db8e0adb3c616', 'ac3491c9d1cc52fb']
+        self.spamWord = ["https://ctkpaarr.org/", "https://荒らし.com/"]
         self.InstanceHost = os.getenv("InstanceHost")
         self.misskeyI = os.getenv('misskeyI')
         self.s = httpx.AsyncClient(base_url=f'https://{os.getenv("InstanceHost")}')
@@ -44,21 +46,34 @@ class FuckSPAM:
                         await self.__del_note(mes["body"]["body"]["id"])
                         await self.__suspend_user(mes["body"]["body"]["user"]["id"])
                         await self.__report(mes["body"]["body"]["user"]["id"])
+            
+            #判断网址
+            url_pattern = re.compile(r'https?://\S+')
+            urls = url_pattern.findall(mes["body"]["body"]["text"])
+            for url in urls:
+                if url in self.spamWord:
+                    await self.__del_note(mes["body"]["body"]["id"])
+                    await self.__suspend_user(mes["body"]["body"]["user"]["id"])
+                    await self.__report(mes["body"]["body"]["user"]["id"])
+
         except KeyError:
             ...
 
     async def wss_client_start(self):
         url = f"wss://{self.InstanceHost}/streaming?i={self.misskeyI}"
-        async with websockets.connect(url) as ws:
-            print(f"Connected to {url}")
-            data = {"type": "connect", "body": {"channel": "main", "id": "1"}}
-            await ws.send(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
-            data = {"type": "connect", "body": {"channel": "globalTimeline", "id": "2",
-                                                "params": {"withRenotes": True, "withReplies": True}}}
-            await ws.send(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
+        try:
+            async with websockets.connect(url) as ws:
+                print(f"Connected to {url}")
+                data = {"type": "connect", "body": {"channel": "main", "id": "1"}}
+                await ws.send(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
+                data = {"type": "connect", "body": {"channel": "globalTimeline", "id": "2",
+                                                    "params": {"withRenotes": True, "withReplies": True}}}
+                await ws.send(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
 
-            async for message in ws:
-                await self.__handle_message(message)
+                async for message in ws:
+                    await self.__handle_message(message)
+        except websockets.exceptions.ConnectionClosedError:
+            
 
 
 async def main():

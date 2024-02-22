@@ -2,4 +2,4 @@ imagehash
 httpx
 python-dotenv
 websockets
-dotenv
+requests

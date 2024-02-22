@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 class FuckSPAM:
     def __init__(self):
         self.spamImgDict = ['938db8e0adb3c616', 'ac3491c9d1cc52fb']
-        self.spamWord = ["https://ctkpaarr.org/", "https://荒らし.com/"]
+        self.spamWord = ["https://ctkpaarr.org/", "https://荒らし.com/", "https://荒らし.com/>"]
         self.InstanceHost = os.getenv("InstanceHost")
         self.misskeyI = os.getenv('misskeyI')
         self.s = httpx.AsyncClient(base_url=f'https://{os.getenv("InstanceHost")}')
